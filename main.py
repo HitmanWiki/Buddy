@@ -7,9 +7,9 @@ from web3 import Web3
 
 # Update the following variables with your own Etherscan and BscScan API keys and Telegram bot token
 ETHERSCAN_API_KEY = 'VPZS3BCNZX3YP3BTG24HKH479F9D3SDVY2'
-BSCSCAN_API_KEY = '<your_bscscan_api_key>'
-TELEGRAM_BOT_TOKEN = '5889937074:AAHb6DQzTVg9cNXHSXEZNd7ZnuLI-m2UEuU'
-TELEGRAM_CHAT_ID = '-1001911319414'
+BSCSCAN_API_KEY = 'NDBH6DWKRHBUDR2GZ424F4Q299VXCF9444'
+TELEGRAM_BOT_TOKEN = '6146803720:AAHEydBk37zSUd8Sj4rDLZdCIwxxDnjOehQ'
+TELEGRAM_CHAT_ID = '<chat_id>'
 
 # Define some helper functions
 def get_wallet_transactions(wallet_address, blockchain):
@@ -66,11 +66,11 @@ def monitor_wallets():
     while True:
         try:
             # Fetch current ETH and BNB prices in USD from CoinGecko API
-            # eth_usd_price_url = 'https://api.coingecko.com/api/v3/simple/price?ids=ethereum%2Cbinancecoin&vs_currencies=usd'
-            # response = requests.get(eth_usd_price_url)
-            # data = json.loads(response.text)
-            # eth_usd_price = data['ethereum']['usd']
-            # bnb_usd_price = data['binancecoin']['usd']
+            eth_usd_price_url = 'https://api.coingecko.com/api/v3/simple/price?ids=ethereum%2Cbinancecoin&vs_currencies=usd'
+            response = requests.get(eth_usd_price_url)
+            data = json.loads(response.text)
+            eth_usd_price = data['ethereum']['usd']
+            bnb_usd_price = data['binancecoin']['usd']
 
             # Read from file
             with open(file_path, 'r') as f:
@@ -86,15 +86,15 @@ def monitor_wallets():
                     if tx_hash not in latest_tx_hashes and tx_time > last_run_time:
                         if tx['to'].lower() == wallet_address.lower():
                             value = float(tx['value']) / 10**18 # Convert from wei to ETH or BNB
-                            # usd_value = value * (eth_usd_price if blockchain == 'eth' else bnb_usd_price) # Calculate value in USD
+                            usd_value = value * (eth_usd_price if blockchain == 'eth' else bnb_usd_price) # Calculate value in USD
                             message = f'🚨 Incoming transaction detected on {wallet_address}'
-                            send_telegram_notification(message, value,  tx['hash'], blockchain)
+                            send_telegram_notification(message, value,usd_value, tx['hash'], blockchain)
                             #print(f'\n{message}, Value: {value} {blockchain.upper()}, ${usd_value:.2f}\n')
                         elif tx['from'].lower() == wallet_address.lower():
                             value = float(tx['value']) / 10**18 # Convert from wei to ETH or BNB
-                            # usd_value = value * (eth_usd_price if blockchain == 'eth' else bnb_usd_price) # Calculate value in USD
+                            usd_value = value * (eth_usd_price if blockchain == 'eth' else bnb_usd_price) # Calculate value in USD
                             message = f'🚨 Outgoing transaction detected on {wallet_address}'
-                            send_telegram_notification(message, value, tx['hash'], blockchain)
+                            send_telegram_notification(message, value,usd_value, tx['hash'], blockchain)
                             #print(f'\n{message}, Value: {value} {blockchain.upper()}, ${usd_value:.2f}\n')
 
                         latest_tx_hashes[tx_hash] = int(tx['blockNumber'])
@@ -132,7 +132,7 @@ def remove_wallet(wallet_address, blockchain):
 # Define the command handlers for the Telegram bot
 def start(update, context):
     message = """
-👋 Welcome to the Ethereum and Binance Wallet Monitoring Bot!
+👋 Welcome to the $Buddy_Bot, For Monitoring Ethereum and Binance Wallets!
 
 Use /add <blockchain> <wallet_address> to add a new wallet to monitor.
 
@@ -146,7 +146,7 @@ Use /list <blockchain> to list all wallets being monitored for a specific blockc
 
 Example: /list ETH or just /list
 
-Don't forget to Buy $Buddy Token if you find this bot useful
+Don't forget to Buy $Buddy Token if you find this bot useful!!!
     """
     context.bot.send_message(chat_id=update.message.chat_id, text=message)
 
